@@ -10,6 +10,7 @@ const API = "https://worldtimeapi.org/api/timezone/";
 
 /* Makes HTTPS request to API */
 function makeApiRequest(formattedStr) {
+  console.log('makeAPIReq', formattedStr)
   let url = formattedStr === null ? API : API.concat(formattedStr); //if requesting timezone, the defalt API url already contains it
   return new Promise ((resolve, reject) => {
     const req = https.get(url, (res) => {
@@ -19,25 +20,31 @@ function makeApiRequest(formattedStr) {
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode <= 299) {
           resolve({ statusCode: res.statusCode, headers: res.headers, body: body });
+        } else if (res.statusCode >= 300 && res.statusCode <= 399) {
+          reject(`Request failed. Status code: ${res.statusCode}. Redirect Error.`);
+        } else if (res.statusCode >= 400 && res.statusCode <= 499) {
+          reject (`Request failed. Status code: ${res.statusCode}. Unknown Location.`);
+        } else if (res.statusCode >= 500 && res.statusCode <= 599) {
+          reject (`Request failed. Status code: ${res.statusCode}. Server Error.`);
         } else {
-          reject('Request failed. status: ' + res.statusCode);
+          reject(`Something went wrong... Try again.`)
         }
       })
     })
     req.on('error', reject);
     req.setTimeout(3000, function() {
-      reject("Server connection timeout (after 3 seconds)")
+      reject("Request to server took too long. Server connection timeout (after 3 seconds).")
       this.abort();
     });
     req.end();
   })
 };
 
-
 /* Redirects user input to either API request or helper function */
 const processUserInput = (argv) => {
   return new Promise((resolve, reject) => {
     const userInput = !argv.length ? null : argv.toString(); //convert input from array to string to match cases
+    console.log('user', argv.length)
     
     switch(userInput) {
       case "-t":
@@ -49,27 +56,55 @@ const processUserInput = (argv) => {
       case "--help":
         console.log(`List of commands ...`);
         break;
-      
+
       case null: 
-        reject("Provide an input")
+        reject("Please provide an input");
+
       default: 
-        let i = userInput.search(/\//g);
-        if (i !== -1) {
-          let subStr1 = userInput.substr(0, 1), subStr2 = userInput.substr(i+1, 1),
-          capitalized  = userInput.replace(subStr1, subStr1.toUpperCase()).replace(subStr2, subStr2.toUpperCase());
-          return resolve(capitalized);
-        } else {
-          console.log('nope')
+        let onlyAlphabetic = userInput.match(/^[a-z\/]+$/i);
+        if (userInput.length > 1 && onlyAlphabetic !== null) {
+          resolve(userInput);
+        }
+        else {
+          console.log("Please provide an input matching accepted format. See help (-h or --help) for details.")
         }
         break;
     }
   }) 
 };
 
-/* Display list of timezones in console */
-const displayTimeZones = (data) => {
-  //need to format data into tables... 
+
+/* Display list of requested valid timezones */
+const displayListofTimezones = (data) => {
+  return new Promise ((resolve) => {
+    // If API data returned as array, assuming it's request was timezone lookup
+    switch (Array.isArray(data)) {
+      case true:
+        let arr = [];
+        let regexSlashChar = /\//g;
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].search(regexSlashChar)) {
+            //splits location elements into separate strings
+            let b = data[i].split(regexSlashChar); 
+            //create object name for console table, and assign values
+            let obj = {[":area/"]: b[0], [":location/"]: b[1] ? b[1] : "n/a", [":region"]: b[2] ? b[2] : "n/a"};
+            arr.push(obj)
+          }
+        }
+        return console.table(arr)
+
+      case false: 
+        resolve(data)
+    }
+  })
 }
+
+/* Display timezone */
+const displayTimeZone = (data) => {
+    const currentTime= new Date(data.unixtime).toLocaleTimeString('en-us',{timeZoneName:'short'});
+    console.log(`The time in \x1b[34m ${data.timezone} \x1b[0m is \x1b[32m ${currentTime}.`)
+};
+
 
 /* Executing promises one by one */
 const fetchDataPromise = (argv) => {
@@ -78,10 +113,13 @@ const fetchDataPromise = (argv) => {
     return makeApiRequest(formattedStr)
   })
   .then((apiResponse) => {
-    return displayTimeZones(apiResponse.body)
+    return displayListofTimezones(JSON.parse(apiResponse.body));
   })
-  .catch((errorMsg) => {
-    console.log("Error:", errorMsg)
+  .then((apiResponse) => {
+    return displayTimeZone(apiResponse);
+  })
+  .catch((reqFailedMsg) => {
+    console.log(`Error: ${reqFailedMsg}`)
   })
 }
 
