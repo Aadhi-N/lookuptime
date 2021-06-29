@@ -25,11 +25,11 @@ INPUT:  $ node index.js america/toronto
 OUTPUT: $ The time in  America/Toronto  is  2:32:34 PM EDT.
 ```
 
-##### Features
+### Features
 
 ⋅⋅* No external libraries, just pure Javascript
 
-##### Future Improvements
+### Future Improvements
 ⋅⋅* Switch to another time api as current one unreliable during api calls
 ⋅⋅* Add more flexible user inputs 
 ⋅⋅* Add feature to compare two or more timezones 
