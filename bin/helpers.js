@@ -12,7 +12,21 @@ const processUserInput = (argv) => {
 
       case "-h":
       case "--help":
-        console.log(`List of commands ...`);
+        console.log(`
+
+        \x1b[36mlookuptime:\x1b[0m
+          A NodeJS cli world time checking app. 
+      
+        \x1b[36mUsage:\x1b[0m
+          Input is based on the formatting required by [worldtimeapi.org](https://worldtimeapi.org/):
+          
+          $ node index.js <area>/<location>/[region]
+      
+        \x1b[36mExample:\x1b[0m
+          INPUT:  $ node index.js america/toronto
+          OUTPUT: $ The time in  America/Toronto  is  2:32:34 PM EDT.
+
+        `);
         break;
 
       case null: 
@@ -33,4 +47,4 @@ const processUserInput = (argv) => {
 
 
 
-module.exports = {processUserInput}
+module.exports = processUserInput;

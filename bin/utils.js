@@ -52,9 +52,8 @@ const listOfTimezones = (data) => {
 
       case false: 
         return new Promise ((resolve) => {resolve(data)});
-    
   }
-}
+};
 
 /* Format epoch/unixtime to date string */
 const currentTime = (unixtime) => {return new Date(unixtime * 1000).toLocaleTimeString('en-us');}

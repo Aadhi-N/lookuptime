@@ -1,0 +1,25 @@
+{
+  "name": "lookuptime",
+  "version": "1.0.0",
+  "description": "global time lookup cli tool using 'worldtimeapi.org'",
+  "main": "index.js",
+  "bin": {
+    "lookuptime": "helpers.js"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aadhi-N/lookuptime.git"
+  },
+  "author": "Aadhi-N",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Aadhi-N/lookuptime/issues"
+  },
+  "homepage": "https://github.com/Aadhi-N/lookuptime#readme"
+}
